@@ -22,12 +22,12 @@ class php {
     }
 
     # Copy over our default php.ini file
-    file { 'php-ini':
-        ensure  => present,
-        path    => '/etc/php5/apache2/php.ini',
-        owner   => 'root',
-        group   => 'root',
-        content => template('php/php.erb'),
-        require => [ Package['php5'], ],
-    }
+    # file { 'php-ini':
+    #     ensure  => present,
+    #     path    => '/etc/php5/apache2/php.ini',
+    #     owner   => 'root',
+    #     group   => 'root',
+    #     content => template('php/php.erb'),
+    #     require => [ Package['php5'], ],
+    # }
 }

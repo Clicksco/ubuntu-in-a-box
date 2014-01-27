@@ -5,10 +5,8 @@ class apache {
         ensure => present,
     }
 
-    # Make sure apache isn't running until configured
-    # Later notify's will sort this out
     service { 'apache2':
-        ensure  => stopped,
+        ensure  => running,
         # Make sure apache is installed before checking
         require => Package['apache2'],
     }
@@ -20,17 +18,23 @@ class apache {
         require => Service['apache2'],
     }
 
+    file { 'vhost-htdocs':
+        ensure => 'directory',
+        path   => '/vagrant/htdocs',
+        require => Service['apache2'],
+    }
+
     # Ensure the public folder exists
     file { 'vhost-public':
         ensure => 'directory',
-        path   => '/vagrant/public',
-        require => Service['apache2'],
+        path   => '/vagrant/htdocs/public',
+        require => File['vhost-htdocs'],
     }
 
     # Create a virtual host file for our website
     file { 'vhost':
         ensure  => present,
-        path    => '/etc/apache2/sites-available/default.conf',
+        path    => '/etc/apache2/sites-available/000-default.conf',
         owner   => 'root',
         group   => 'root',
         content => template('apache/vhost.erb'),
@@ -41,8 +45,8 @@ class apache {
     # Enable our virtual host
     file { 'vhost-enable':
         ensure  => link,
-        path    => '/etc/apache2/sites-enabled/default.conf',
-        target  => '/etc/apache2/sites-available/default.conf',
+        path    => '/etc/apache2/sites-enabled/000-default.conf',
+        target  => '/etc/apache2/sites-available/000-default.conf',
         # Make sure apache and the vhost file are there before symlink
         require => [ Service['apache2'], File['vhost'] ],
     }

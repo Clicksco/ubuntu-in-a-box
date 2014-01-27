@@ -1,7 +1,7 @@
 class utils {
     $packages = [
-            "curl", 
-            'git', 
+            "curl",
+            'git',
             'acl',
         ]
 
