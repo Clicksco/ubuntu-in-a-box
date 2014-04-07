@@ -28,7 +28,11 @@ In addition, a few tools are installed:
 
 * Git
 * cURL
-* ACL
+
+Configuration
+---------------
+
+There are a couple of configuration items at the top of the Vagrantfile that you can use to tailor your box. These are set to sensible defaults initially, but more options in this area are planned.
 
 Known Issues
 ---------------
