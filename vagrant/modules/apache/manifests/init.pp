@@ -15,13 +15,11 @@ class apache {
     file { 'vhost-logs':
         ensure => 'directory',
         path   => '/vagrant/log',
-        require => Service['apache2'],
     }
 
     file { 'vhost-htdocs':
         ensure => 'directory',
         path   => '/vagrant/htdocs',
-        require => Service['apache2'],
     }
 
     # Ensure the public folder exists
@@ -39,7 +37,7 @@ class apache {
         group   => 'root',
         content => template('apache/vhost.erb'),
         # Make sure apache is installed before creating the file
-        require => [ Service['apache2'], File[ 'vhost-logs', 'vhost-public' ], ],
+        require => [ Package['apache2'], File[ 'vhost-logs', 'vhost-public' ], ],
     }
 
     # Enable our virtual host
@@ -48,26 +46,62 @@ class apache {
         path    => '/etc/apache2/sites-enabled/000-default.conf',
         target  => '/etc/apache2/sites-available/000-default.conf',
         # Make sure apache and the vhost file are there before symlink
-        require => [ Service['apache2'], File['vhost'] ],
+        require => File['vhost'],
+        notify  => Service['apache2'],
     }
 
-    # Replace the apache user with vagrant
-    # Note: this was awkward & didn't work in the apache class. Any pointers
-    #       would be appreciated!
-    file { 'apache-envvars':
-        ensure  => present,
-        path    => '/etc/apache2/envvars',
-        owner   => 'root',
-        group   => 'root',
-        content => template('apache/envvars.erb'),
-        require => Service['apache2'],
+    # Change user
+    exec { "ApacheUserChange" :
+        path    => [
+            "/usr/bin",
+            "/bin",
+            "/usr/sbin",
+            "/sbin",
+            "/usr/local/bin",
+            "/usr/local/sbin",
+        ],
+        command => "sed -i 's/APACHE_RUN_USER=www-data/APACHE_RUN_USER=vagrant/' /etc/apache2/envvars",
+        onlyif  => "grep -c 'APACHE_RUN_USER=www-data' /etc/apache2/envvars",
+        require => Package["apache2"],
+        notify  => Service["apache2"],
+    }
+
+    # Change group
+    exec { "ApacheGroupChange" :
+        path    => [
+            "/usr/bin",
+            "/bin",
+            "/usr/sbin",
+            "/sbin",
+            "/usr/local/bin",
+            "/usr/local/sbin",
+        ],
+        command => "sed -i 's/APACHE_RUN_GROUP=www-data/APACHE_RUN_GROUP=vagrant/' /etc/apache2/envvars",
+        onlyif  => "grep -c 'APACHE_RUN_GROUP=www-data' /etc/apache2/envvars",
+        require => Package["apache2"],
+        notify  => Service["apache2"],
+    }
+
+    exec { "apache_lockfile_permissions" :
+        path    => [
+            "/usr/bin",
+            "/bin",
+            "/usr/sbin",
+            "/sbin",
+            "/usr/local/bin",
+            "/usr/local/sbin",
+        ],
+        command => "chown -R vagrant:www-data /var/lock/apache2",
+        require => Package["apache2"],
+        notify  => Service["apache2"],
     }
 
     # Load some modules
     define apache::loadmodule () {
         exec { "/usr/sbin/a2enmod $name" :
             unless  => "/bin/readlink -e /etc/apache2/mods-enabled/${name}.load",
-            require => Service['apache2'],
+            require => Package['apache2'],
+            notify  => Service['apache2'],
         }
     }
 

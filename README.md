@@ -9,7 +9,7 @@ The server runs at `localhost.dev:8080`, so a hosts entry will be required for 1
 
 Assumptions
 ---------------
-* You have [Vagrant](http://vagrantup.com/) installed (requires 1.3+, tested on 1.3.1)
+* You have [Vagrant](http://vagrantup.com/) installed (requires on 1.3.5+)
 * You are using [Virtualbox](https://www.virtualbox.org/) as the VM provider
 * You have created a host entry for `localhost.dev` to 127.0.0.1
 

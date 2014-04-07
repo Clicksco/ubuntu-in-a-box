@@ -1,2 +1,4 @@
 .vagrant
-log/*
+vagrant/graphs/
+vagrant/graphs/!.gitkeep
+/log/*
